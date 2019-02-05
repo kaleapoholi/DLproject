@@ -101,6 +101,11 @@ for epoch in range(epochs):
 				running_loss=0.0
 print ('Finished Training')
 
+def imshow(img):
+    img=img/2+0.5
+    npimg=img.numpy()
+    plt.imshow(np.transpose(npimg,(1,2,0)))
+    
 #test
 testiter=iter(test_loader)
 images,labels=testiter.next()
