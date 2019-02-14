@@ -45,10 +45,6 @@ class Net(nn.Module):
 		#self.conv2=nn.Conv2d(6,16,5)
 		self.conv1=nn.Conv2d(3,6,5)
 		self.conv2=nn.Conv2d(6,16,5)
-		self.conv2=nn.Conv2d(16,32,5)
-		self.conv3=nn.Conv2d(32,64,5)
-		self.conv4=nn.Conv2d(64,128,5)
-		
 		
 		
 		
@@ -67,9 +63,8 @@ class Net(nn.Module):
 		#Maxpoolingovera(2,2)window
 		x=F.max_pool2d(F.relu(self.conv1(x)),(2,2))
 		#Ifthesizeisasquareyoucanonlyspecifyasinglenumber
-		x=F.max_pool2d(F.relu(self.conv2(x)),(2,2))
-		x=F.max_pool2d(F.relu(self.conv3(x)),(2,2))
-		x=F.max_pool2d(F.relu(self.conv4(x)),2)
+		x=F.max_pool2d(F.relu(self.conv2(x)),2)
+
 		x=x.view(-1,self.num_flat_features(x))
 		x=F.relu(self.fc1(x))
 		x=F.relu(self.fc2(x))
@@ -94,9 +89,9 @@ print (net)
 
 #chosse the loss function and update rule
 criterion=nn.CrossEntropyLoss()
-optimizer=optim.SGD(net.parameters(),lr=0.01,momentum=0.9)
+optimizer=optim.SGD(net.parameters(),lr=0.001,momentum=0.9)
 
-epochs=10
+epochs=15
 for epoch in range(epochs):
     running_loss=0.0
     for i,data in enumerate(train_loader,0):
@@ -126,26 +121,26 @@ images,labels=testiter.next()
 imshow(torchvision.utils.make_grid(images))
 images,labels = images.to(device),labels.to(device)
 
-#print labels
-print(''.join('%5s'%labels[j] for j in range(4)))
-
-
 
 outputs=net(images)
 _,predicted=torch.max(outputs,1)
+#print labels
 
+print('Predicted:',' '.join('%5s'%labels[j] for j in range(83)))
 
 correct = 0
 total =0
+class_correct = list(0. for i in range(83))
+class_total = list(0. for i in range(83))
 with torch.no_grad():
     for data in test_loader:
-        images,labels=data
-		#images,labels = images.to(device),labels.to(device)
-        outputs=net(images.to(device))
-        _,predicted=torch.max(outputs.data,1)
-        total+=labels.size(0)
-        correct+=(predicted==labels.to(device)).sum().item()
-
+		images,labels=data
+		images,labels=images.to(device),labels.to(device)
+		outputs=net(images)
+		_,predicted=torch.max(outputs.data,1)
+		total+=labels.size(0)
+		correct+=(predicted==labels.to(device)).sum().item()
+		
 
 print('Accuracy of the network on the 10000 test images: %d %%'%(100*correct/total))
 plt.show()
