@@ -1,5 +1,6 @@
 import sys 
 import os
+import numpy as np
 import torch
 import torchvision
 import torchvision.transforms as transforms
@@ -7,7 +8,6 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 import matplotlib.pyplot as plt
-import numpy as np
 from torch.utils.data import Dataset,DataLoader
 from torchvision import transforms, datasets
 
@@ -41,18 +41,14 @@ class Net(nn.Module):
 		super(Net,self).__init__()
 
 		#1input imagechannel,6outputchannels,5x5squareconvolutionkernel
-		#self.conv1=nn.Conv2d(3,6,5)
-		#self.conv2=nn.Conv2d(6,16,5)
+		
 		self.conv1=nn.Conv2d(3,6,5)
 		self.conv2=nn.Conv2d(6,16,5)
 		
 		
 		
 		#anaffineoperation:y=Wx+b
-		#self.fc1=nn.Linear(16*22*22,120)#(sizeofinput,sizeofoutput)
-		#self.fc2=nn.Linear(120,84)
-		#self.fc3=nn.Linear(84,83)
-
+	
 		self.fc1=nn.Linear(16*22*22,120)#(sizeofinput,sizeofoutput)
 		self.fc2=nn.Linear(120,84)
 		self.fc3=nn.Linear(84,83)
@@ -91,23 +87,23 @@ print (net)
 criterion=nn.CrossEntropyLoss()
 optimizer=optim.SGD(net.parameters(),lr=0.001,momentum=0.9)
 
-epochs=15
+epochs=2
 for epoch in range(epochs):
-    running_loss=0.0
-    for i,data in enumerate(train_loader,0):
-        inputs,labels=data
-        inputs,labels=inputs.to(device),labels.to(device)
-        optimizer.zero_grad()
+  running_loss=0.0
+  for i,data in enumerate(train_loader,0):
+    inputs,labels=data
+    inputs,labels=inputs.to(device),labels.to(device)
+    optimizer.zero_grad()
 
-        #train
-        outputs=net(inputs)
-        loss=criterion(outputs,labels)
-        loss.backward()
-        optimizer.step()
-        running_loss+=loss.item()
-        if i % 2000 == 1999: #printevery2000mini-batches
-				print ('[%d,%5d] loss: %.3f' % (epoch+1,i+1,running_loss/2000))
-				running_loss=0.0
+    #train
+    outputs=net(inputs)
+    loss=criterion(outputs,labels)
+    loss.backward()
+    optimizer.step()
+    running_loss+=loss.item()
+    if (i % 2000 == 1999): #printevery2000mini-batches
+			print ('[%d,%5d] loss: %.3f' % (epoch+1,i+1,running_loss/2000))
+			running_loss=0.0
 print ('Finished Training')
 
 def imshow(img):
@@ -126,20 +122,18 @@ outputs=net(images)
 _,predicted=torch.max(outputs,1)
 #print labels
 
-print('Predicted:',' '.join('%5s'%labels[j] for j in range(83)))
+print('Predicted:',' '.join('%5s'%labels[j] for j in range(4)))
 
 correct = 0
 total =0
-class_correct = list(0. for i in range(83))
-class_total = list(0. for i in range(83))
 with torch.no_grad():
-    for data in test_loader:
+  for data in test_loader:
 		images,labels=data
 		images,labels=images.to(device),labels.to(device)
 		outputs=net(images)
 		_,predicted=torch.max(outputs.data,1)
 		total+=labels.size(0)
-		correct+=(predicted==labels.to(device)).sum().item()
+		correct+=(predicted==labels).sum().item()
 		
 
 print('Accuracy of the network on the 10000 test images: %d %%'%(100*correct/total))
